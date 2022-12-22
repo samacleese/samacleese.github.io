@@ -1,0 +1,117 @@
+#!/bin/bash
+#
+# Simple thumbnail picture gallery script.  With some Imagemagick transformations.
+#
+# 17/08/14  J McDonnell
+# 05/12/19  J McDonnell - made picture file names (greps) case insensitive
+#
+
+SOURCEDIR=/media/sild/Jesse/stable-diffusion
+
+title=$1
+
+if [[ -z $title ]]
+then
+   echo "Argument missing (title)"
+   exit
+fi
+
+zipfile="$title.zip"
+
+
+#
+# Process pictures, create thumbnails if necessary
+#
+
+find ${SOURCEDIR} \( -name '*jpeg' -o -name '*png' \) -name '*cat*' -name '*space*' -print |
+while read picture
+do
+   echo Processing file $picture
+   thumbpic="thumb_$(basename $picture)"
+   cp -v $picture .
+
+
+   #
+   # If no thumbnail image exists for picture, create one...
+   #
+   if [ ! -f "$thumbpic" ]
+   then
+
+      # If a txt file exists for picture and is not empty use contents as caption
+      # Otherwise place no caption
+      infofile=$(echo $picture | sed 's|_GFPGANv1.3||; s|_RealESRGAN_x4plus||; s|jpeg$|txt|; s|png$|txt|')
+      if [ -s $infofile ]
+      then
+	 cp $infofile .
+         pictitle=$(head -n1 $infofile|fold -w28 -s)
+      else
+         pictitle=" "
+      fi
+
+      #
+      # Uncomment one of the four paragraphs below to achieve different effects.
+      # (Only have one paragraph at a time uncommented).
+      #
+
+
+      # Option 1. Simple thumbnails with no effects.
+      #echo convert "$picture" -resize 256x256 "$thumbpic"
+      #convert "$picture" -resize 256x256 "$thumbpic"
+
+
+      # Option 2. Put a simple frame around each picture, no caption.
+      #echo montage -resize 10% -frame 5 -geometry +0+0 "$picture" "$thumbpic"
+      #montage -resize 10% -frame 5 -geometry +0+0 "$picture" "$thumbpic"
+
+
+      # Option 3. Put a simple frame round each picture with a caption at the bottom (-label)
+      #echo montage -resize 10% -pointsize 20 -label "$pictitle" "$picture" -frame 5 -geometry +0+0 "$thumbpic"
+      montage -resize 256x256 -pointsize 20 -label "$pictitle" "$picture" -frame 5 -geometry +0+0 "$thumbpic"
+
+
+      # Option 4. Put a "polaroid" effect on each picture, including a caption.  Picture is framed,
+      # rotated with shadow.  If $angle is zero there is no rotation.
+      # Note: the "-repage" is there to offet the rotated/"polaroided" within its actual
+      # (unrotated) frame.  Without -repage, there is clipping where the shared/rotated 
+      # image goes beyond the image border.
+      #
+      #convert -resize 10% $picture png:small.png
+      #angle=$(($RANDOM % 20 - 10))
+      ##angle=0
+      #convert -set caption "$pictitle" small.png -pointsize 28 -background black -polaroid $angle -repage +10+5 png:polaroid.png
+      #convert polaroid.png -background white -flatten $thumbpic
+     
+   fi
+done
+
+###############################################################################
+#
+# Create index.html file
+#
+
+cat > index.html <<%
+<html>
+<font face=arial size=6>
+<h3>$title</h3>
+<p>Click on a thumbnail to download the full size image</p><br>
+%
+
+ls | egrep -i "jpg$|jpeg$|png$" | egrep -v 'thumb' | sort -R |
+while read picture
+do
+   thumbpic="thumb_$picture"
+
+   pictitle=$picture
+   infofile=$(echo $picture | sed 's|_GFPGANv1.3||; s|_RealESRGAN_x4plus||; s|jpeg$|txt|; s|png$|txt|')
+   if [ -s $infofile ]
+   then
+      pictitle=$(cat $infofile)
+   else
+      touch $infofile
+   fi
+
+   echo "<a href=$picture><img src=$thumbpic alt=$thumbpic title=\"$pictitle\"></a>" >> index.html
+done
+
+echo "<br><font face=arial size=2>Updated on $(date).  Run time $SECONDS seconds.<br><br></html>" >> index.html
+
