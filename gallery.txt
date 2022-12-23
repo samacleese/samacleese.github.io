@@ -66,7 +66,7 @@ do
 
       # Option 3. Put a simple frame round each picture with a caption at the bottom (-label)
       #echo montage -resize 10% -pointsize 20 -label "$pictitle" "$picture" -frame 5 -geometry +0+0 "$thumbpic"
-      montage -resize 256x256 -pointsize 20 -label "$pictitle" "$picture" -frame 5 -geometry +0+0 "$thumbpic"
+      montage -resize 256x256 -pointsize 20 -label "Cats in space!" "$picture" -frame 5 -geometry +0+0 "$thumbpic"
 
 
       # Option 4. Put a "polaroid" effect on each picture, including a caption.  Picture is framed,

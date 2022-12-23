@@ -1,0 +1,15 @@
+cats in space, colorful, happy, Sparth, Vincent Di Fate
+Width: 512
+Height: 512
+Seed: 5024414
+Steps: 25
+Guidance Scale: 7.5
+Prompt Strength: 0.8
+Use Face Correction: None
+Use Upscaling: None
+Sampler: euler_a
+Negative Prompt: 
+Stable Diffusion model: /home/jesse/workspace/stable-diffusion-ui/dist/linux-mac/stable-diffusion-ui/stable-diffusion/sd-v1-4.ckpt.ckpt
+VAE model: None
+Hypernetwork Model: None
+Hypernetwork Strength: None
